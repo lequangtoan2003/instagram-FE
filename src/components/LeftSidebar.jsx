@@ -7,19 +7,21 @@ import {
   Search,
   TrendingUp,
 } from "lucide-react";
-import React from "react";
+import React, { useState } from "react";
 import { Avatar, AvatarFallback, AvatarImage } from "./ui/avatar";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 import { useDispatch, useSelector } from "react-redux";
 import { setAuthUser } from "@/redux/authSlice";
+import CreatePost from "./CreatePost";
 
 export default function LeftSidebar() {
   const { user } = useSelector((store) => store.auth);
   console.log("datauser:", user);
   const dispatch = useDispatch();
   const navigate = useNavigate();
+  const [open, setOpen] = useState();
   const logoutHandler = async () => {
     try {
       const res = await axios.get("http://localhost:8001/api/v1/user/logout", {
@@ -34,9 +36,12 @@ export default function LeftSidebar() {
       console.log(error);
     }
   };
+
   const sidebarHandler = (textType) => {
     if (textType === "Logout") {
       logoutHandler();
+    } else if (textType === "Create") {
+      setOpen(true);
     }
   };
 
@@ -77,6 +82,7 @@ export default function LeftSidebar() {
           })}
         </div>
       </div>
+      <CreatePost open={open} setOpen={setOpen} />
     </div>
   );
 }
