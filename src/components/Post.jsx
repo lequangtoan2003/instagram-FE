@@ -15,6 +15,8 @@ export default function Post({ post }) {
   const [open, setOpen] = useState(false);
   const { user } = useSelector((store) => store.auth);
   const { posts } = useSelector((store) => store.post);
+  const [liked, setLiked] = useState(post.likes.includes(user?._id) || false);
+  const [postLike, setPostLike] = useState(post.likes.length);
   const dispatch = useDispatch();
   const {
     image,
@@ -28,6 +30,34 @@ export default function Post({ post }) {
       setText(inputText);
     } else {
       setText("");
+    }
+  };
+  const likeOrDislikeHandler = async () => {
+    try {
+      const action = liked ? "dislike" : "like";
+      const res = await axios.get(
+        `http://localhost:8001/api/v1/post/${post._id}/${action}`,
+        { withCredentials: true }
+      );
+      if (res.data.success) {
+        const updatedLikes = liked ? postLike - 1 : postLike + 1;
+        setPostLike(updatedLikes);
+        setLiked(!liked);
+        const updatedPostData = posts.map((p) =>
+          p._id === post._id
+            ? {
+                ...p,
+                likes: liked
+                  ? p.likes.filter((id) => id !== user._id)
+                  : [...p.likes, user._id],
+              }
+            : p
+        );
+        dispatch(setPosts(updatedPostData));
+        toast.success(res.data.message);
+      }
+    } catch (error) {
+      console.log(error);
     }
   };
   const deletePostHandler = async () => {
@@ -92,10 +122,19 @@ export default function Post({ post }) {
       {/* like cmt send bookmart */}
       <div className="flex items-center justify-between my-2">
         <div className="flex items-center justify-between gap-3">
-          <FaRegHeart
-            className="cursor-pointer hover:text-gray-600"
-            size={"24px"}
-          />
+          {liked ? (
+            <FaHeart
+              onClick={likeOrDislikeHandler}
+              size={"24px"}
+              className="cursor-pointer text-red-600"
+            />
+          ) : (
+            <FaRegHeart
+              onClick={likeOrDislikeHandler}
+              className="cursor-pointer hover:text-gray-600"
+              size={"24px"}
+            />
+          )}
           <MessageCircle
             onClick={() => setOpen(true)}
             className="cursor-pointer hover:text-gray-600"
@@ -108,7 +147,7 @@ export default function Post({ post }) {
         <Bookmark className="cursor-pointer hover:text-gray-600" />
       </div>
       <span className="font-medium block mb-2">
-        {likes.length} like{likes.length > 1 ? "s" : ""}
+        {postLike} like{postLike > 1 ? "s" : ""}
       </span>
       <p>
         <span className="font-medium mr-2">{username}</span>
