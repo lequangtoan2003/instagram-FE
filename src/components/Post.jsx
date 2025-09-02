@@ -5,10 +5,23 @@ import { Bookmark, MessageCircle, MoreHorizontal, Send } from "lucide-react";
 import { Button } from "./ui/button";
 import { FaHeart, FaRegHeart } from "react-icons/fa";
 import CommentDialog from "./CommentDialog";
+import { useDispatch, useSelector } from "react-redux";
+import { toast } from "sonner";
+import axios from "axios";
+import { setPosts } from "@/redux/postSlice";
 
-export default function Post() {
+export default function Post({ post }) {
   const [text, setText] = useState();
   const [open, setOpen] = useState(false);
+  const { user } = useSelector((store) => store.auth);
+  const { posts } = useSelector((store) => store.post);
+  const dispatch = useDispatch();
+  const {
+    image,
+    caption,
+    likes,
+    author: { username, profilePicture },
+  } = post;
   const changeEventHandler = (e) => {
     const inputText = e.target.value;
     if (inputText.trim()) {
@@ -17,15 +30,33 @@ export default function Post() {
       setText("");
     }
   };
+  const deletePostHandler = async () => {
+    try {
+      const res = await axios.delete(
+        `http://localhost:8001/api/v1/post/delete/${post?._id}`,
+        { withCredentials: true }
+      );
+      if (res.data.success) {
+        const updatePostData = posts.filter(
+          (postItem) => postItem?._id !== post?._id
+        );
+        dispatch(setPosts(updatePostData));
+        toast.success(res.data.message);
+      }
+    } catch (error) {
+      console.log(error);
+      toast.error(error.response.data.message);
+    }
+  };
   return (
     <div className="my-8 w-full max-w-sm mx-auto">
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
           <Avatar>
-            <AvatarImage src="" alt="" />
+            <AvatarImage className="object-cover" src={profilePicture} alt="" />
             <AvatarFallback>CN</AvatarFallback>
           </Avatar>
-          <h1>username</h1>
+          <h1>{username}</h1>
         </div>
         <Dialog>
           <DialogTrigger asChild>
@@ -41,18 +72,21 @@ export default function Post() {
             <Button variant="ghost" className="cursor-pointer w-fit">
               Add to favarites
             </Button>
-            <Button
-              variant="ghost"
-              className="cursor-pointer w-fit text-[#ED4956] font-bold"
-            >
-              Delete
-            </Button>
+            {user && user?._id === post?.author._id && (
+              <Button
+                onClick={deletePostHandler}
+                variant="ghost"
+                className="cursor-pointer w-fit text-[#ED4956] font-bold"
+              >
+                Delete
+              </Button>
+            )}
           </DialogContent>
         </Dialog>
       </div>
       <img
         className="rounded-lg my-2 w-full aspect-square object-cover"
-        src="https://burst.shopifycdn.com/photos/photography-product-download.jpg?width=1000&format=pjpg&exif=0&iptc=0"
+        src={image}
         alt=""
       />
       {/* like cmt send bookmart */}
@@ -73,10 +107,12 @@ export default function Post() {
         </div>
         <Bookmark className="cursor-pointer hover:text-gray-600" />
       </div>
-      <span className="font-medium block mb-2">1k likes</span>
+      <span className="font-medium block mb-2">
+        {likes.length} like{likes.length > 1 ? "s" : ""}
+      </span>
       <p>
-        <span className="font-medium mr-2">username</span>
-        caption
+        <span className="font-medium mr-2">{username}</span>
+        {caption}
       </p>
       <span
         className="cursor-pointer text-sm text-gray-400"

@@ -55,7 +55,7 @@ export default function LeftSidebar() {
     {
       icon: (
         <Avatar className="w-6 h-6">
-          <AvatarImage src={user?.profilePicture} />
+          <AvatarImage className="object-cover" src={user?.profilePicture} />
           <AvatarFallback>CN</AvatarFallback>
         </Avatar>
       ),
