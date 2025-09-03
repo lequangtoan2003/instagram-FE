@@ -15,6 +15,7 @@ import { toast } from "sonner";
 import { useDispatch, useSelector } from "react-redux";
 import { setAuthUser } from "@/redux/authSlice";
 import CreatePost from "./CreatePost";
+import { setPosts, setSelectedPost } from "@/redux/postSlice";
 
 export default function LeftSidebar() {
   const { user } = useSelector((store) => store.auth);
@@ -28,6 +29,8 @@ export default function LeftSidebar() {
         withCredentials: true,
       });
       if (res.data.success) {
+        dispatch(setPosts([]));
+        dispatch(setSelectedPost(null));
         dispatch(setAuthUser(null));
         navigate("/login");
         toast.success(res.data.message);

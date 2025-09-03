@@ -8,10 +8,11 @@ import CommentDialog from "./CommentDialog";
 import { useDispatch, useSelector } from "react-redux";
 import { toast } from "sonner";
 import axios from "axios";
-import { setPosts } from "@/redux/postSlice";
+import { setPosts, setSelectedPost } from "@/redux/postSlice";
+import { Badge } from "./ui/badge";
 
 export default function Post({ post }) {
-  const [text, setText] = useState();
+  const [text, setText] = useState("");
   const [open, setOpen] = useState(false);
   const { user } = useSelector((store) => store.auth);
   const { posts } = useSelector((store) => store.post);
@@ -21,9 +22,9 @@ export default function Post({ post }) {
   const {
     image,
     caption,
-    likes,
     author: { username, profilePicture },
   } = post;
+
   const changeEventHandler = (e) => {
     const inputText = e.target.value;
     if (inputText.trim()) {
@@ -32,6 +33,35 @@ export default function Post({ post }) {
       setText("");
     }
   };
+
+  const commentHandler = async () => {
+    try {
+      const res = await axios.post(
+        `http://localhost:8001/api/v1/post/${post._id}/comment`,
+        { text },
+        {
+          headers: {
+            "Content-Type": "application/json",
+          },
+          withCredentials: true,
+        }
+      );
+      if (res.data.success) {
+        const updatePostData = posts.map((p) =>
+          p._id === post._id
+            ? { ...p, comments: [...p.comments, res.data.comment] }
+            : p
+        );
+        dispatch(setPosts(updatePostData));
+        setText("");
+        toast.success(res.data.message);
+      }
+    } catch (error) {
+      console.log(error);
+      toast.error(error.response?.data?.message || "Failed to add comment");
+    }
+  };
+
   const likeOrDislikeHandler = async () => {
     try {
       const action = liked ? "dislike" : "like";
@@ -58,8 +88,12 @@ export default function Post({ post }) {
       }
     } catch (error) {
       console.log(error);
+      toast.error(
+        error.response?.data?.message || "Failed to like/dislike post"
+      );
     }
   };
+
   const deletePostHandler = async () => {
     try {
       const res = await axios.delete(
@@ -75,9 +109,10 @@ export default function Post({ post }) {
       }
     } catch (error) {
       console.log(error);
-      toast.error(error.response.data.message);
+      toast.error(error.response?.data?.message || "Failed to delete post");
     }
   };
+
   return (
     <div className="my-8 w-full max-w-sm mx-auto">
       <div className="flex items-center justify-between">
@@ -86,7 +121,12 @@ export default function Post({ post }) {
             <AvatarImage className="object-cover" src={profilePicture} alt="" />
             <AvatarFallback>CN</AvatarFallback>
           </Avatar>
-          <h1>{username}</h1>
+          <div className="flex items-center gap-3">
+            <h1>{username}</h1>
+            {user?._id === post.author._id && (
+              <Badge variant="secondary">Author</Badge>
+            )}
+          </div>
         </div>
         <Dialog>
           <DialogTrigger asChild>
@@ -100,7 +140,7 @@ export default function Post({ post }) {
               Unfollow
             </Button>
             <Button variant="ghost" className="cursor-pointer w-fit">
-              Add to favarites
+              Add to favorites
             </Button>
             {user && user?._id === post?.author._id && (
               <Button
@@ -119,7 +159,6 @@ export default function Post({ post }) {
         src={image}
         alt=""
       />
-      {/* like cmt send bookmart */}
       <div className="flex items-center justify-between my-2">
         <div className="flex items-center justify-between gap-3">
           {liked ? (
@@ -136,13 +175,13 @@ export default function Post({ post }) {
             />
           )}
           <MessageCircle
-            onClick={() => setOpen(true)}
+            onClick={() => {
+              dispatch(setSelectedPost(post));
+              setOpen(true);
+            }}
             className="cursor-pointer hover:text-gray-600"
           />
-          <Send
-            onClick={() => setOpen(true)}
-            className="cursor-pointer hover:text-gray-600"
-          />
+          <Send className="cursor-pointer hover:text-gray-600" />
         </div>
         <Bookmark className="cursor-pointer hover:text-gray-600" />
       </div>
@@ -153,12 +192,18 @@ export default function Post({ post }) {
         <span className="font-medium mr-2">{username}</span>
         {caption}
       </p>
-      <span
-        className="cursor-pointer text-sm text-gray-400"
-        onClick={() => setOpen(true)}
-      >
-        View all 10 comments
-      </span>
+      {post.comments.length > 0 && (
+        <span
+          className="cursor-pointer text-sm text-gray-400"
+          onClick={() => {
+            dispatch(setSelectedPost(post));
+            setOpen(true);
+          }}
+        >
+          View all {post.comments.length} comment
+          {post.comments.length > 1 ? "s" : ""}
+        </span>
+      )}
       <CommentDialog open={open} setOpen={setOpen} />
       <div className="flex justify-between">
         <input
@@ -168,7 +213,16 @@ export default function Post({ post }) {
           placeholder="Add a comment..."
           className="outline-none text-sm w-full"
         />
-        {text ? <span className="text-[#3BADF8]">Post</span> : ""}
+        {text ? (
+          <span
+            onClick={commentHandler}
+            className="text-[#3BADF8] cursor-pointer"
+          >
+            Post
+          </span>
+        ) : (
+          ""
+        )}
       </div>
     </div>
   );
