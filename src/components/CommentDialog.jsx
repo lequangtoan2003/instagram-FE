@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
 import { Dialog, DialogContent, DialogTrigger } from "./ui/dialog";
 import { Avatar, AvatarFallback, AvatarImage } from "./ui/avatar";
 import { Link } from "react-router-dom";
@@ -8,18 +8,12 @@ import { useDispatch, useSelector } from "react-redux";
 import Comment from "./Comment";
 import axios from "axios";
 import { toast } from "sonner";
-import { setPosts } from "@/redux/postSlice";
+import { setPosts, setSelectedPost } from "@/redux/postSlice";
 
 export default function CommentDialog({ open, setOpen }) {
   const [text, setText] = useState("");
   const { selectedPost, posts } = useSelector((store) => store.post);
   const dispatch = useDispatch();
-  const [comment, setComment] = useState([]);
-  useEffect(() => {
-    if (selectedPost) {
-      setComment(selectedPost.comments);
-    }
-  }, [selectedPost]);
 
   const changeEventHandler = (e) => {
     const inputText = e.target.value;
@@ -43,19 +37,31 @@ export default function CommentDialog({ open, setOpen }) {
         }
       );
       if (res.data.success) {
-        const updateCommentData = [...comment, res.data.comment];
-        setComment(updateCommentData);
+        // Cập nhật danh sách bài viết trong Redux store
         const updatePostData = posts.map((p) =>
-          p._id === selectedPost._id ? { ...p, comments: updateCommentData } : p
+          p._id === selectedPost._id
+            ? { ...p, comments: [...p.comments, res.data.comment] }
+            : p
         );
         dispatch(setPosts(updatePostData));
+
+        // Cập nhật selectedPost trong Redux store
+        dispatch(
+          setSelectedPost({
+            ...selectedPost,
+            comments: [...selectedPost.comments, res.data.comment],
+          })
+        );
+
         toast.success(res.data.message);
         setText("");
       }
     } catch (error) {
       console.log(error);
+      toast.error(error.response?.data?.message || "Failed to add comment");
     }
   };
+
   return (
     <Dialog open={open}>
       <DialogContent
@@ -83,7 +89,6 @@ export default function CommentDialog({ open, setOpen }) {
                   <Link className="font-semibold text-xs">
                     {selectedPost?.author?.username}
                   </Link>
-                  {/* <span className="text-gray-600 text-sm">Bio here...</span> */}
                 </div>
               </div>
               <Dialog>
@@ -100,7 +105,7 @@ export default function CommentDialog({ open, setOpen }) {
             </div>
             <hr />
             <div className="flex-1 overflow-y-auto max-h-96 p-4">
-              {comment.map((comment) => (
+              {selectedPost?.comments.map((comment) => (
                 <Comment key={comment._id} comment={comment} />
               ))}
             </div>

@@ -27,7 +27,7 @@ export default function CreatePost({ open, setOpen }) {
       setImagePreview(dataUrl);
     }
   };
-  const createPostHandler = async (e) => {
+  const createPostHandler = async () => {
     const formData = new FormData();
     formData.append("caption", caption);
     if (imagePreview) formData.append("image", file);
