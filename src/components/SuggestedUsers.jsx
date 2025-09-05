@@ -16,13 +16,16 @@ export default function SuggestedUsers() {
           return (
             <div key={user._id} className="flex justify-between items-center">
               <div className="flex gap-3 items-center">
-                <Avatar>
-                  <AvatarImage
-                    className="object-cover w-full h-full"
-                    src={user?.profilePicture}
-                  />
-                  <AvatarFallback>CN</AvatarFallback>
-                </Avatar>
+                <Link to={`/profile/${user?._id}`}>
+                  <Avatar>
+                    <AvatarImage
+                      className="object-cover"
+                      src={user?.profilePicture}
+                      alt="post_image"
+                    />
+                    <AvatarFallback>CN</AvatarFallback>
+                  </Avatar>
+                </Link>
                 <div className="flex flex-col gap-1 font-bold text-sm">
                   <h1 className="font-semibold text-sm">
                     <Link to={`/profile/${user?._id}`}>{user?.username}</Link>

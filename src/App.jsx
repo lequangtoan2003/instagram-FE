@@ -2,6 +2,7 @@ import Home from "./components/Home";
 import Login from "./components/Login";
 import MainLayout from "./components/MainLayout";
 import Profile from "./components/Profile";
+import ProfileEdit from "./components/ProfileEdit";
 import Signup from "./components/Signup";
 import { createBrowserRouter, RouterProvider } from "react-router-dom";
 const browserRouter = createBrowserRouter([
@@ -10,7 +11,8 @@ const browserRouter = createBrowserRouter([
     element: <MainLayout />,
     children: [
       { path: "/", element: <Home /> },
-      { path: "/profile", element: <Profile /> },
+      { path: "/profile/:id", element: <Profile /> },
+      { path: "/account/edit", element: <ProfileEdit /> },
     ],
   },
   {

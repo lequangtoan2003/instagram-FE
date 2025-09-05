@@ -7,26 +7,28 @@ import SuggestedUsers from "./SuggestedUsers";
 export default function RightSidebar() {
   const { user } = useSelector((store) => store.auth);
   return (
-    <div className="w-fit my-10 mr-32">
-      <div className="flex gap-3 items-center">
+    <div className="w-fit my-10 pr-32">
+      <div className="flex items-center gap-2">
         <Link to={`/profile/${user?._id}`}>
           <Avatar>
             <AvatarImage
-              className="object-cover w-full h-full"
+              className="object-cover"
               src={user?.profilePicture}
+              alt="post_image"
             />
             <AvatarFallback>CN</AvatarFallback>
           </Avatar>
         </Link>
-        <div className="flex flex-col gap-1 font-bold text-sm">
+        <div>
           <h1 className="font-semibold text-sm">
             <Link to={`/profile/${user?._id}`}>{user?.username}</Link>
           </h1>
-          <span className="font-normal text-gray-600 text-sm">
+          <span className="text-gray-600 text-sm">
             {user?.bio || "Bio here..."}
           </span>
         </div>
       </div>
+
       <SuggestedUsers />
     </div>
   );
