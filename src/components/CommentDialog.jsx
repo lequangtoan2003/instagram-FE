@@ -81,7 +81,10 @@ export default function CommentDialog({ open, setOpen }) {
               <div className="flex gap-3 items-center">
                 <Link>
                   <Avatar>
-                    <AvatarImage src={selectedPost?.author?.profilePicture} />
+                    <AvatarImage
+                      className="object-cover"
+                      src={selectedPost?.author?.profilePicture}
+                    />
                     <AvatarFallback>CN</AvatarFallback>
                   </Avatar>
                 </Link>

@@ -10,6 +10,7 @@ import { toast } from "sonner";
 import axios from "axios";
 import { setPosts, setSelectedPost } from "@/redux/postSlice";
 import { Badge } from "./ui/badge";
+import { Link } from "react-router-dom";
 
 export default function Post({ post }) {
   const [text, setText] = useState("");
@@ -121,8 +122,11 @@ export default function Post({ post }) {
             <AvatarImage className="object-cover" src={profilePicture} alt="" />
             <AvatarFallback>CN</AvatarFallback>
           </Avatar>
+
           <div className="flex items-center gap-3">
-            <h1>{username}</h1>
+            <Link to={`/profile/${post?.author?._id}`}>
+              <h1>{username}</h1>
+            </Link>
             {user?._id === post.author._id && (
               <Badge variant="secondary">Author</Badge>
             )}

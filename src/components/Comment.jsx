@@ -5,7 +5,7 @@ import { AvatarImage } from "@radix-ui/react-avatar";
 export default function Comment({ comment }) {
   return (
     <div>
-      <div className="flex gap-3 items-center">
+      <div className="flex gap-3 items-center py-2">
         <Avatar>
           <AvatarImage
             className="object-cover w-full h-full"
