@@ -1,11 +1,14 @@
 import useGetUserProfile from "@/hooks/useGetUserProfile";
 import React, { useState } from "react";
-import { useSelector } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import { Link, useParams } from "react-router-dom";
 import { Avatar, AvatarFallback, AvatarImage } from "./ui/avatar";
 import { Button } from "./ui/button";
 import { Badge } from "./ui/badge";
 import { AtSign, Heart, MessageCircle } from "lucide-react";
+import axios from "axios";
+import { toast } from "sonner";
+import { updateFollowStatus } from "@/redux/authSlice";
 
 export default function Profile() {
   const params = useParams();
@@ -13,8 +16,32 @@ export default function Profile() {
   useGetUserProfile(userId);
   const { userProfile, user } = useSelector((store) => store.auth);
   const isLoggedUserProfile = user?._id === userProfile?._id;
-  const isFollowing = true;
+  const isFollowing = user?.following?.includes(userProfile?._id);
   const [activeTab, setActiveTab] = useState("posts");
+  const dispatch = useDispatch();
+  const followOrUnfollow = async () => {
+    try {
+      const res = await axios.post(
+        `http://localhost:8001/api/v1/user/followorunfollow/${userProfile._id}`,
+        {},
+        { withCredentials: true }
+      );
+      if (res.data.success) {
+        toast.success(res.data.message);
+
+        dispatch(
+          updateFollowStatus({
+            userId: user._id,
+            targetUserId: userProfile._id,
+            isFollowing,
+          })
+        );
+      }
+    } catch (error) {
+      console.log(error);
+      toast.error("Error following/unfollowing user");
+    }
+  };
   const handlerTabChange = (tab) => {
     setActiveTab(tab);
   };
@@ -54,7 +81,11 @@ export default function Profile() {
                   </>
                 ) : isFollowing ? (
                   <>
-                    <Button variant="secondary" className="h-8">
+                    <Button
+                      onClick={followOrUnfollow}
+                      variant="secondary"
+                      className="h-8"
+                    >
                       Unfollow
                     </Button>
                     <Button variant="secondary" className="h-8">
@@ -62,7 +93,10 @@ export default function Profile() {
                     </Button>
                   </>
                 ) : (
-                  <Button className="h-8 bg-[#0095F6] hover:bg-[#3192d2]">
+                  <Button
+                    onClick={followOrUnfollow}
+                    className="h-8 bg-[#0095F6] hover:bg-[#3192d2]"
+                  >
                     Follow
                   </Button>
                 )}
