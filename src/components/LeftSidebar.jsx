@@ -49,6 +49,8 @@ export default function LeftSidebar() {
       navigate(`/profile/${user._id}`);
     } else if (textType === "Home") {
       navigate("/");
+    } else if (textType === "Message") {
+      navigate("/chat");
     }
   };
 
