@@ -1,13 +1,15 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { Input } from "./ui/input";
 import { Button } from "./ui/button";
 import axios from "axios";
 import { toast } from "sonner";
 import { Link, useNavigate } from "react-router-dom";
 import { Loader2 } from "lucide-react";
+import { useSelector } from "react-redux";
 
 export default function Signup() {
   const navigate = useNavigate();
+  const { user } = useSelector((store) => store.auth);
   const [input, setInput] = useState({
     username: "",
     email: "",
@@ -44,6 +46,11 @@ export default function Signup() {
       setLoading(false);
     }
   };
+  useEffect(() => {
+    if (user) {
+      navigate("/");
+    }
+  }, []);
   return (
     <div className="flex justify-center items-center h-screen w-screen">
       <form
