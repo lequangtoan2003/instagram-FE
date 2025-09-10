@@ -41,6 +41,21 @@ const authSlice = createSlice({
         }
       }
     },
+    // Reducer mới: Toggle bookmark trong user.bookmarks
+    toggleBookmark: (state, action) => {
+      const postId = action.payload;
+      if (state.user && Array.isArray(state.user.bookmarks)) {
+        if (state.user.bookmarks.includes(postId)) {
+          // Đã bookmark -> Xóa (unbookmark)
+          state.user.bookmarks = state.user.bookmarks.filter(
+            (id) => id !== postId
+          );
+        } else {
+          // Chưa bookmark -> Thêm
+          state.user.bookmarks.push(postId);
+        }
+      }
+    },
   },
 });
 
@@ -50,5 +65,6 @@ export const {
   setUserProfile,
   updateFollowStatus,
   setSelectedUser,
+  toggleBookmark, // Export action mới
 } = authSlice.actions;
 export default authSlice.reducer;

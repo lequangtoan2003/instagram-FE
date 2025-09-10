@@ -11,6 +11,7 @@ import axios from "axios";
 import { setPosts, setSelectedPost } from "@/redux/postSlice";
 import { Badge } from "./ui/badge";
 import { Link } from "react-router-dom";
+import { toggleBookmark } from "@/redux/authSlice";
 
 export default function Post({ post }) {
   const [text, setText] = useState("");
@@ -20,6 +21,10 @@ export default function Post({ post }) {
   const [liked, setLiked] = useState(post.likes.includes(user?._id) || false);
   const [postLike, setPostLike] = useState(post.likes.length);
   const dispatch = useDispatch();
+  const [isBookmarked, setIsBookmarked] = useState(
+    (Array.isArray(user?.bookmarks) && user.bookmarks.includes(post?._id)) ||
+      false
+  );
   const {
     image,
     caption,
@@ -120,6 +125,10 @@ export default function Post({ post }) {
         { withCredentials: true }
       );
       if (res.data.success) {
+        // Cập nhật Redux: Toggle bookmark trong user.bookmarks
+        dispatch(toggleBookmark(post._id));
+        // Cập nhật state local để icon thay đổi ngay
+        setIsBookmarked(!isBookmarked);
         toast.success(res.data.message);
       }
     } catch (error) {
@@ -203,7 +212,11 @@ export default function Post({ post }) {
         </div>
         <Bookmark
           onClick={bookmarkHandler}
-          className="cursor-pointer hover:text-gray-600"
+          className={`cursor-pointer ${
+            isBookmarked
+              ? "text-yellow-500 hover:text-yellow-600"
+              : "hover:text-gray-600"
+          }`}
         />
       </div>
       <span className="font-medium block mb-2">
